@@ -1,0 +1,25 @@
+%{
+   #include<stdlib.h>
+   void yyerror(char*);
+%}
+%%
+[a-z] {yylval.sIndex=*yytext-'a';return VARIABLE;}
+[0-9]+ {yylval.iValue=atoi(yytext);return INTEGER;}
+[-()<>=+*/;{}] {return *yytext;}
+">=" return GE;
+"<=" return LE;
+"==" return EQ;
+"!=" return NE;
+"begin" return _BEGIN;
+"end"   return END;
+"while" return WHILE;
+"if" return IF;
+"else" return ELSE;
+"print" return PRINT;
+[\t\n]+ ;
+.yyerror("Unknow");
+%%
+int yywrap(void)
+{
+   return 1;
+}
