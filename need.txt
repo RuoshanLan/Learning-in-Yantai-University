@@ -1,0 +1,37 @@
+#include  <stdlib.h>
+#include  <string.h> 
+#include  <ctype.h>
+#include  <string.h>
+#include  <stdio.h>
+typedef enum
+{
+    typeCon,
+    typeId,
+    typeOpr
+}nodeEnum;
+typedef struct
+{
+    int value;/*value of constant*/
+}conNodeType;
+typedef struct
+{
+   int i;    /*subscript to sym array*/
+}idNodeType;
+typedef struct
+{
+   int oper; /*operator*/
+   int nops; /*number of operands*/
+   struct nodeTypeTag *op[1];
+}oprNodeType;
+typedef struct nodeTypeTag
+{
+   nodeEnum type;
+   union
+  {
+     conNodeType con;
+     idNodeType id;
+     oprNodeType opr;
+   };
+}nodeType;
+extern int sym[26];
+    
