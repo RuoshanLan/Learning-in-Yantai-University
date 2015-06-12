@@ -20,9 +20,9 @@
  };
 %token<iValue>INTEGER
 %token<sIndex>VARIABLE
-%token WHILE IF PRINT _BEGIN END DELAY ROBOT BODY BODY1 BODY2 HEAD HEAD1 HEAD2
+%token WHILE PRINT _BEGIN END DELAY ROBOT BODY BODY1 BODY2 HEAD HEAD1 HEAD2
 LUA LLA RUA RLA LUL LLL RUL RLL
-%nonassoc IFX
+%nonassoc IF
 %nonassoc ELSE
 %left AND OR
 %left GE LE EQ NE '>''<'
@@ -45,9 +45,10 @@ stmt:
      |expr_set';'       {$$=$1;}
 	 |PRINT expr';'     {$$=opr(PRINT,1,$2);}
      |PRINT expr_set';'  {$$=opr(PRINT,1,$2);}
-     |WHILE'('expr_comp')'stmt %prec IFX {$$=opr(WHILE,2,$3,$5);}
-     |IF'('expr_comp')'stmt ELSE stmt {$$=opr(IF,3,$3,$5,$7);}
-     |'{'stmt_list'}' {$$=$2;}
+     |WHILE'('expr_comp')'stmt {$$=opr(WHILE,2,$3,$5);}
+     |IF'('expr_comp')'stmt ELSE stmt %prec ELSE{$$=opr(IF,3,$3,$5,$7);}
+     |IF'('expr_comp')'stmt %prec IF {$$=opr(IF,2,$3,$5);}
+	 |'{'stmt_list'}' {$$=$2;}
 	 |ROBOT'{'expr'}'';'  {$$=opr(ROBOT,1,$3);}
 	 |DELAY'{'expr'}'';'  {$$=opr(DELAY,1,$3);}
 	 |'{'BODY'}''{'expr'}'';' {$$=opr(BODY,1,$5);}
