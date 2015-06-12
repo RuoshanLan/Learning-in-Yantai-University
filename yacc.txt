@@ -30,7 +30,7 @@ LUA LLA RUA RLA LUL LLL RUL RLL
 %left '*''/'
 %left SELFADD SELFMINUS PRESELFADD PRESELFMINUS
 %nonassoc UMINUS
-%type <nPtr> stmt expr stmt_list expr_set expr_setself
+%type <nPtr> stmt expr stmt_list expr_set expr_setself expr_comp
 %%
 program:
      _BEGIN function END  {exit(0);}
@@ -45,8 +45,8 @@ stmt:
      |expr_set';'       {$$=$1;}
 	 |PRINT expr';'     {$$=opr(PRINT,1,$2);}
      |PRINT expr_set';'  {$$=opr(PRINT,1,$2);}
-     |WHILE'('expr')'stmt %prec IFX {$$=opr(WHILE,2,$3,$5);}
-     |IF'('expr')'stmt ELSE stmt {$$=opr(IF,3,$3,$5,$7);}
+     |WHILE'('expr_comp')'stmt %prec IFX {$$=opr(WHILE,2,$3,$5);}
+     |IF'('expr_comp')'stmt ELSE stmt {$$=opr(IF,3,$3,$5,$7);}
      |'{'stmt_list'}' {$$=$2;}
 	 |ROBOT'{'expr'}'';'  {$$=opr(ROBOT,1,$3);}
 	 |DELAY'{'expr'}'';'  {$$=opr(DELAY,1,$3);}
@@ -81,6 +81,16 @@ expr_setself:
 	  |VARIABLE SELFMINUS {$$=opr(SELFMINUS,1,id($1));}
 	  |'('expr_setself')' {$$=$2;}
 	  ;
+expr_comp:
+      expr'<'expr {$$=opr('<',2,$1,$3);}
+      |expr'>'expr {$$=opr('>',2,$1,$3);}
+      |expr GE expr {$$=opr(GE,2,$1,$3);}
+      |expr LE expr {$$=opr(LE,2,$1,$3);}
+      |expr NE expr {$$=opr(NE,2,$1,$3);}
+      |expr EQ expr {$$=opr(EQ,2,$1,$3);}
+      |expr_comp AND expr_comp {$$=opr(AND,2,$1,$3);}
+	  |expr_comp OR expr_comp {$$=opr(OR,2,$1,$3);}
+	  |'('expr_comp')'  {$$=$2;}
 expr:
       INTEGER     {$$=con($1);}
       |VARIABLE    {$$=id($1);}
@@ -89,12 +99,6 @@ expr:
       |expr'-'expr {$$=opr('-',2,$1,$3);}
       |expr'*'expr {$$=opr('*',2,$1,$3);}
       |expr'/'expr {$$=opr('/',2,$1,$3);}
-      |expr'<'expr {$$=opr('<',2,$1,$3);}
-      |expr'>'expr {$$=opr('>',2,$1,$3);}
-      |expr GE expr {$$=opr(GE,2,$1,$3);}
-      |expr LE expr {$$=opr(LE,2,$1,$3);}
-      |expr NE expr {$$=opr(NE,2,$1,$3);}
-      |expr EQ expr {$$=opr(EQ,2,$1,$3);}
       |'('expr')'{$$=$2;}
       ;
 %%
@@ -186,6 +190,8 @@ int ex(nodeType*p)
 				case PRESELFMINUS:return --sym[p->opr.op[0]->id.i];
 				case SELFADD:return sym[p->opr.op[0]->id.i]++;
 				case SELFMINUS:return sym[p->opr.op[0]->id.i]--;
+				case AND:return ex(p->opr.op[0])&&ex(p->opr.op[1]);
+				case OR:return ex(p->opr.op[0])||ex(p->opr.op[1]);
 			 }
     }
     return 0;
