@@ -26,6 +26,7 @@
 "head" return HEAD;
 "{head}+" return HEAD1;
 "{head}-" return HEAD2;
+"for" return FOR;
 "lua" return LUA;
 "lla" return LLA;
 "rua" return RUA;
