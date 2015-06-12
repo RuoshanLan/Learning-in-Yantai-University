@@ -1,9 +1,10 @@
 %{
    #include<stdlib.h>
    void yyerror(char*);
+   extern void addVar(char*);
+   Map sym[100];
 %}
 %%
-[a-z] {yylval.sIndex=*yytext-'a';return VARIABLE;}
 [0-9]+ {yylval.iValue=atoi(yytext);return INTEGER;}
 [-()<>=+*/;{}] {return *yytext;}
 ">=" return GE;
@@ -37,6 +38,7 @@
 "rll" return RLL;
 "robot" return ROBOT;
 "delay" return DELAY;
+[a-zA-Z][a-zA-Z0-9]* {addVar(yytext);yylval.sIndex=currentVar;return VARIABLE;}
 [\t\n]+ ;
 .yyerror("Unknow");
 %%

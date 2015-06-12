@@ -10,7 +10,10 @@
    int ex(nodeType *p);
    int yylex(void);
    void yyerror(char*s);
-   int sym[26];
+   void addVar(char *);
+   int totalVar=0;
+   int currentVar;
+   Map sym[100];
 %}
 %union
 {
@@ -144,13 +147,38 @@ nodeType *opr(int oper,int nops,...)
    va_end(ap);
    return p;
 }
+void addVar(char *s)
+{
+ if(totalVar==0)
+ {
+    strcpy(sym[0].s,s);
+    totalVar++;
+    currentVar=0;
+    return;
+ }
+ int i;
+ for(i=0;i<totalVar;i++)
+ {
+   if(strcmp(sym[i].s,s)==0)
+   {
+      currentVar=i;
+      return;
+   }
+}
+
+ strcpy(sym[totalVar].s,s);
+ currentVar=totalVar;
+ totalVar++;
+
+}
+
 int ex(nodeType*p)
 {
    if(!p) return 0;
    switch(p->type)
    {
        case typeCon:return p->con.value;
-       case typeId: return sym[p->id.i];
+       case typeId: return sym[p->id.i].n;
        case typeOpr:
            switch(p->opr.oper)
            {
@@ -183,7 +211,7 @@ int ex(nodeType*p)
 				case RUL:printf("rul%d\n",ex(p->opr.op[0]));return 0;
 				case RLL:printf("rll%d\n",ex(p->opr.op[0]));return 0;
 				case';':ex(p->opr.op[0]);  return ex(p->opr.op[1]);
-                case'=':return sym[p->opr.op[0]->id.i]=ex(p->opr.op[1]);
+                case'=':return sym[p->opr.op[0]->id.i].n=ex(p->opr.op[1]);
                 case UMINUS:return -ex(p->opr.op[0]);
                 case '+': return ex(p->opr.op[0])+ex(p->opr.op[1]);
                 case '-':return ex(p->opr.op[0])-ex(p->opr.op[1]);
@@ -195,10 +223,10 @@ int ex(nodeType*p)
                 case LE: return ex(p->opr.op[0])<=ex(p->opr.op[1]);
                 case NE: return ex(p->opr.op[0])!=ex(p->opr.op[1]);
                 case EQ: return ex(p->opr.op[0])==ex(p->opr.op[1]);
-                case PRESELFADD:return ++sym[p->opr.op[0]->id.i];
-				case PRESELFMINUS:return --sym[p->opr.op[0]->id.i];
-				case SELFADD:return sym[p->opr.op[0]->id.i]++;
-				case SELFMINUS:return sym[p->opr.op[0]->id.i]--;
+                case PRESELFADD:return ++sym[p->opr.op[0]->id.i].n;
+				case PRESELFMINUS:return --sym[p->opr.op[0]->id.i].n;
+				case SELFADD:return sym[p->opr.op[0]->id.i].n++;
+				case SELFMINUS:return sym[p->opr.op[0]->id.i].n--;
 				case AND:return ex(p->opr.op[0])&&ex(p->opr.op[1]);
 				case OR:return ex(p->opr.op[0])||ex(p->opr.op[1]);
 			 }

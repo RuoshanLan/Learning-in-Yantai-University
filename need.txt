@@ -1,8 +1,13 @@
 #include  <stdlib.h>
-#include  <string.h> 
+#include  <string.h>
 #include  <ctype.h>
 #include  <string.h>
 #include  <stdio.h>
+typedef struct
+{
+	char s[11];
+	int n;
+}Map;
 typedef enum
 {
     typeCon,
@@ -33,5 +38,7 @@ typedef struct nodeTypeTag
      oprNodeType opr;
    };
 }nodeType;
-extern int sym[26];
-    
+extern int totalVar;
+extern int currentVar;
+extern Map sym[100];
+
