@@ -10,7 +10,7 @@
 "<=" return LE;
 "==" return EQ;
 "!=" return NE;
-"++" return SEIFADD;
+"++" return SELFADD;
 "--" return SELFMINUS;
 "&&" return AND;
 "||" return OR; 
