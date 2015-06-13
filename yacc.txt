@@ -1,6 +1,5 @@
 %{
    #include <stdio.h>
-   #include <stdlib.h>
    #include <stdarg.h>
    #include "need.h"
    nodeType *opr(int oper,int nops,...);
@@ -107,13 +106,10 @@ expr:
       |'('expr')'{$$=$2;}
       ;
 %%
-#define SIZEOF_NODETYPE ((char*)&p->con-(char*)p)
 nodeType*con(int value)
 {
     nodeType*p;
-    size_t nodeSize;
-    nodeSize=SIZEOF_NODETYPE+sizeof(conNodeType);
-    p=malloc(nodeSize);
+    p=malloc(sizeof(nodeType));
     p->type=typeCon;
     p->con.value=value;
     return p;
@@ -121,9 +117,7 @@ nodeType*con(int value)
 nodeType *id(int i)
 {
    nodeType*p;
-   size_t nodeSize;
-   nodeSize=SIZEOF_NODETYPE+sizeof(idNodeType);
-   p=malloc(nodeSize);
+   p=malloc(sizeof(nodeType));
    p->type=typeId;
    p->id.i=i;
    return p;
@@ -133,10 +127,8 @@ nodeType *opr(int oper,int nops,...)
 {
    va_list ap;
    nodeType *p;
-   size_t nodeSize;
    int i;
-   nodeSize=SIZEOF_NODETYPE+sizeof(oprNodeType)+(nops-1)*sizeof(nodeType*);
-   p=malloc(nodeSize);
+   p=malloc(nops*sizeof(nodeType));
    p->type=typeOpr;
    p->opr.oper=oper;
    p->opr.nops=nops;
@@ -164,11 +156,9 @@ void addVar(char *s)
       return;
    }
 }
-
  strcpy(sym[totalVar].s,s);
  currentVar=totalVar;
  totalVar++;
-
 }
 
 int ex(nodeType*p)
