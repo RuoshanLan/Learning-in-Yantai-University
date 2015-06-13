@@ -22,6 +22,8 @@
 "if" return IF;
 "else" return ELSE;
 "print" return PRINT;
+"repeat" return REPEAT;
+"until"  return UNTIL;
 "body" return BODY;
 "{body}+" return BODY1;
 "{body}-" return BODY2;
