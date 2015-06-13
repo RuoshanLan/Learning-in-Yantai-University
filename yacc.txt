@@ -113,7 +113,7 @@ nodeType*con(int value)
     nodeType*p;
     size_t nodeSize;
     nodeSize=SIZEOF_NODETYPE+sizeof(conNodeType);
-    if((p=malloc(nodeSize))==NULL) yyerror("out of memory");
+    p=malloc(nodeSize);
     p->type=typeCon;
     p->con.value=value;
     return p;
@@ -123,7 +123,7 @@ nodeType *id(int i)
    nodeType*p;
    size_t nodeSize;
    nodeSize=SIZEOF_NODETYPE+sizeof(idNodeType);
-   if((p=malloc(nodeSize))==NULL) yyerror("out of memory");
+   p=malloc(nodeSize);
    p->type=typeId;
    p->id.i=i;
    return p;
@@ -136,8 +136,7 @@ nodeType *opr(int oper,int nops,...)
    size_t nodeSize;
    int i;
    nodeSize=SIZEOF_NODETYPE+sizeof(oprNodeType)+(nops-1)*sizeof(nodeType*);
-   if((p=malloc(nodeSize))==NULL)
-      yyerror("out of memory");
+   p=malloc(nodeSize);
    p->type=typeOpr;
    p->opr.oper=oper;
    p->opr.nops=nops;
