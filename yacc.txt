@@ -4,9 +4,9 @@
    #include "need.h"
    nodeType *opr(int oper,int nops,...);
    nodeType *id(int i);
-   nodeType *con(int value);
+   nodeType *con(float value);
    void freeNode(nodeType *p);
-   int ex(nodeType *p);
+   float ex(nodeType *p);
    int yylex(void);
    void yyerror(char*s);
    void addVar(char *);
@@ -16,11 +16,11 @@
 %}
 %union
 {
-   int iValue;
-   char sIndex;
+   float iValue;
+   int sIndex;
    nodeType *nPtr;
  };
-%token<iValue>INTEGER
+%token<iValue>NUMBER
 %token<sIndex>VARIABLE
 %token FOR WHILE PRINT _BEGIN END DELAY ROBOT BODY BODY1 BODY2 HEAD HEAD1 HEAD2
 LUA LLA RUA RLA LUL LLL RUL RLL
@@ -96,7 +96,7 @@ expr_comp:
 	  |expr_comp OR expr_comp {$$=opr(OR,2,$1,$3);}
 	  |'('expr_comp')'  {$$=$2;}
 expr:
-      INTEGER     {$$=con($1);}
+      NUMBER     {$$=con($1);}
       |VARIABLE    {$$=id($1);}
       |'-'expr %prec UMINUS  {$$=opr(UMINUS,1,$2);}
       |expr'+'expr {$$=opr('+',2,$1,$3);}
@@ -106,7 +106,7 @@ expr:
       |'('expr')'{$$=$2;}
       ;
 %%
-nodeType*con(int value)
+nodeType*con(float value)
 {
     nodeType*p;
     p=malloc(sizeof(nodeType));
@@ -161,7 +161,7 @@ void addVar(char *s)
  totalVar++;
 }
 
-int ex(nodeType*p)
+float ex(nodeType*p)
 {
    if(!p) return 0;
    switch(p->type)
@@ -182,7 +182,7 @@ int ex(nodeType*p)
 							ex(p->opr.op[2]);
 						 }
 				         return 0;
-				case PRINT:printf("%d\n",ex(p->opr.op[0]));return 0;
+				case PRINT:printf("%g\n",ex(p->opr.op[0]));return 0;
 				case DELAY:printf("delay{%d}\n",ex(p->opr.op[0]));return 0;
 				case ROBOT:printf("robot{%d}\n",ex(p->opr.op[0]));return 0;
 				case BODY: printf("body%d\n",ex(p->opr.op[0]));return 0;

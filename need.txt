@@ -6,7 +6,7 @@
 typedef struct
 {
 	char s[11];
-	int n;
+	float n;
 }Map;
 typedef enum
 {
@@ -16,7 +16,7 @@ typedef enum
 }nodeEnum;
 typedef struct
 {
-    int value;/*value of constant*/
+    float value;/*value of constant*/
 }conNodeType;
 typedef struct
 {
