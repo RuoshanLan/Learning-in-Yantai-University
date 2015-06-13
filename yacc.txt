@@ -42,7 +42,7 @@ function:
      |
       ;
 stmt:
-     ';'                {$$=opr(';',2,NULL,NULL);}
+     ';'                {$$=opr(';',2,NULL,NULL);}  /*可以不用进行任何操作，此处凑足两个 可以和下面的形式保持一致 减少分情况讨论的麻烦*/
      |expr';'           {$$=$1;}
      |expr_set';'       {$$=$1;}
 	 |PRINT expr';'     {$$=opr(PRINT,1,$2);}
@@ -134,17 +134,17 @@ nodeType *id(int i)
 
 nodeType *opr(int oper,int nops,...)
 {
-   va_list ap;
+   va_list ap;/*定义一个 va_list 指针来访问参数表*/
    nodeType *p;
    int i;
    p=malloc(nops*sizeof(nodeType));
    p->type=typeOpr;
    p->opr.oper=oper;
    p->opr.nops=nops;
-   va_start(ap,nops);
+   va_start(ap,nops);/*初始化 ap，让它指向第一个变参*/
    for(i=0;i<nops;i++)
-      p->opr.op[i]=va_arg(ap,nodeType*);
-   va_end(ap);
+      p->opr.op[i]=va_arg(ap,nodeType*);/* 获取一个 nodeType* 型参数，并且 ap 指向下一个参数*/
+   va_end(ap);/*关闭ap*/
    return p;
 }
 void addVar(char *s)
