@@ -5,6 +5,7 @@
    nodeType *opr(int oper,int nops,...);
    nodeType *id(int i);
    nodeType *con(float value);
+   nodeType *str(char str[]);
    void freeNode(nodeType *p);
    float ex(nodeType *p);
    int yylex(void);
@@ -18,12 +19,13 @@
 {
    float iValue;
    int sIndex;
+   char com[11];
    nodeType *nPtr;
  };
 %token<iValue>NUMBER
 %token<sIndex>VARIABLE
-%token FOR WHILE PRINT _BEGIN END REPEAT UNTIL DELAY ROBOT BODY BODY1 BODY2 HEAD HEAD1 HEAD2
-LUA LLA RUA RLA LUL LLL RUL RLL
+%token<com>COMMAND
+%token FOR WHILE PRINT _BEGIN END REPEAT UNTIL DELAY ROBOT COMMANDFUNCTION
 %nonassoc IF
 %nonassoc ELSE
 %left AND OR
@@ -55,20 +57,7 @@ stmt:
 	 |'{'stmt_list'}' {$$=$2;}
 	 |ROBOT'{'expr'}'';'  {$$=opr(ROBOT,1,$3);}
 	 |DELAY'{'expr'}'';'  {$$=opr(DELAY,1,$3);}
-	 |'{'BODY'}''{'expr'}'';' {$$=opr(BODY,1,$5);}
-	 |BODY1'{'expr'}'';' {$$=opr(BODY1,1,$3);}
-	 |BODY2'{'expr'}'';' {$$=opr(BODY2,1,$3);}
-	 |'{'HEAD'}''{'expr'}'';' {$$=opr(HEAD,1,$5);}
-	 |HEAD1'{'expr'}'';' {$$=opr(HEAD1,1,$3);}
-     |HEAD2'{'expr'}'';' {$$=opr(HEAD2,1,$3);}
-     |LUA'{'expr'}'';' {$$=opr(LUA,1,$3);}
-     |LLA'{'expr'}'';' {$$=opr(LLA,1,$3);}
-     |RUA'{'expr'}'';' {$$=opr(RUA,1,$3);}
-     |RLA'{'expr'}'';' {$$=opr(RLA,1,$3);}
-     |LUL'{'expr'}'';' {$$=opr(LUL,1,$3);}
-     |LLL'{'expr'}'';' {$$=opr(LLL,1,$3);}
-     |RUL'{'expr'}'';' {$$=opr(RUL,1,$3);}
-     |RLL'{'expr'}'';' {$$=opr(RLL,1,$3);}
+     |COMMAND'{'expr'}'';'   {$$=opr(COMMANDFUNCTION,2,str($1),$3);}
      ;
 stmt_list:
       stmt {$$=$1;}
@@ -131,7 +120,15 @@ nodeType *id(int i)
    p->id.i=i;
    return p;
 }
-
+nodeType*str(char str[])
+{
+   
+   nodeType*p;
+   p=malloc(sizeof(nodeType));
+   p->type=typeChar;
+   strcpy(p->s.str,str);
+   return p;
+}
 nodeType *opr(int oper,int nops,...)
 {
    va_list ap;/*定义一个 va_list 指针来访问参数表*/
@@ -177,6 +174,16 @@ float ex(nodeType*p)
    {
        case typeCon:return p->con.value;
        case typeId: return sym[p->id.i].n;
+	   case typeChar:{
+	                 int i;
+	                 int len=strlen(p->s.str);
+	                 for(i=0;i<len;i++)
+					 {
+					     if((p->s.str[i]!='{')&&(p->s.str[i]!='}'))
+						 printf("%c",p->s.str[i]);
+					 }
+	                 return 0.0;
+					 }
        case typeOpr:
            switch(p->opr.oper)
            {
@@ -197,22 +204,9 @@ float ex(nodeType*p)
 						   ex(p->opr.op[0]);
 						   }while(ex(p->opr.op[1])); return 0;
 				case PRINT:printf("%g\n",ex(p->opr.op[0]));return 0;
-				case DELAY:printf("delay{%d}\n",ex(p->opr.op[0]));return 0;
-				case ROBOT:printf("robot{%d}\n",ex(p->opr.op[0]));return 0;
-				case BODY: printf("body%d\n",ex(p->opr.op[0]));return 0;
-				case BODY1: printf("body+%d\n",ex(p->opr.op[0]));return 0;
-				case BODY2: printf("body-%d\n",ex(p->opr.op[0]));return 0;
-				case HEAD: printf("head%d\n",ex(p->opr.op[0]));return 0;
-				case HEAD1:printf("head+%d\n",ex(p->opr.op[0]));return 0;
-				case HEAD2:printf("head-%d\n",ex(p->opr.op[0]));return 0;
-				case LUA:printf("lua%d\n",ex(p->opr.op[0]));return 0;
-                case LLA:printf("lla%d\n",ex(p->opr.op[0]));return 0;
-                case RUA:printf("rua%d\n",ex(p->opr.op[0]));return 0;
-				case RLA:printf("rla%d\n",ex(p->opr.op[0]));return 0;
-				case LUL:printf("lul%d\n",ex(p->opr.op[0]));return 0;
-				case LLL:printf("lll%d\n",ex(p->opr.op[0]));return 0;
-				case RUL:printf("rul%d\n",ex(p->opr.op[0]));return 0;
-				case RLL:printf("rll%d\n",ex(p->opr.op[0]));return 0;
+				case DELAY:printf("delay{%g}\n",ex(p->opr.op[0]));return 0;
+				case ROBOT:printf("robot{%g}\n",ex(p->opr.op[0]));return 0;
+				case COMMANDFUNCTION:{float temp;temp=ex(p->opr.op[0]);printf("%g\n",ex(p->opr.op[1])); return 0;}
 				case';':ex(p->opr.op[0]);  return ex(p->opr.op[1]);
                 case'=':return sym[p->opr.op[0]->id.i].n=ex(p->opr.op[1]);
                 case UMINUS:return -ex(p->opr.op[0]);
