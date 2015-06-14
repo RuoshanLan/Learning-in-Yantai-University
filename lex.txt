@@ -29,6 +29,7 @@
 ("{lua}"|"{rua}"|"{lla}"|"{rla}"|"{lul}"|"{rul}"|"{lll}"|"{rll}")x?z?"+"?"-"? {strcpy(yylval.com,yytext);return COMMAND;}
 "robot" return ROBOT;
 "delay" return DELAY;
+"reset" {strcpy(yylval.com,yytext);return RESET;}
 [a-zA-Z][a-zA-Z0-9]* {addVar(yytext);yylval.sIndex=currentVar;return VARIABLE;}
 [\t\n]+ ;
 .yyerror("Unknow");
