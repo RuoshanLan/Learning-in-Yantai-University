@@ -14,6 +14,7 @@
    int totalVar=0;
    int currentVar;
    Map sym[100];
+   FILE *command;
 %}
 %union
 {
@@ -181,7 +182,7 @@ float ex(nodeType*p)
 	                 for(i=0;i<len;i++)
 					 {
 					     if((p->s.str[i]!='{')&&(p->s.str[i]!='}'))
-						 printf("%c",p->s.str[i]);
+						 fprintf(command,"%c",p->s.str[i]);
 					 }
 	                 return 0.0;
 					 }
@@ -205,10 +206,10 @@ float ex(nodeType*p)
 						   ex(p->opr.op[0]);
 						   }while(ex(p->opr.op[1])); return 0;
 				case PRINT:printf("%g\n",ex(p->opr.op[0]));return 0;
-				case RESETFUNCTION:{float temp;temp=ex(p->opr.op[0]);putchar('\n');return 0;}
-				case DELAY:printf("delay{%g}\n",ex(p->opr.op[0]));return 0;
-				case ROBOT:printf("robot{%g}\n",ex(p->opr.op[0]));return 0;
-				case COMMANDFUNCTION:{float temp;temp=ex(p->opr.op[0]);printf("%g\n",ex(p->opr.op[1])); return 0;}
+				case RESETFUNCTION:{float temp;temp=ex(p->opr.op[0]);fprintf(command,"%c",'\n');return 0;}
+				case DELAY:fprintf(command,"delay{%g}\n",ex(p->opr.op[0]));return 0;
+				case ROBOT:fprintf(command,"robot{%g}\n",ex(p->opr.op[0]));return 0;
+				case COMMANDFUNCTION:{float temp;temp=ex(p->opr.op[0]);fprintf(command,"%g\n",ex(p->opr.op[1])); return 0;}
 				case';':ex(p->opr.op[0]);  return ex(p->opr.op[1]);
                 case'=':return sym[p->opr.op[0]->id.i].n=ex(p->opr.op[1]);
                 case UMINUS:return -ex(p->opr.op[0]);
@@ -245,11 +246,12 @@ void freeNode(nodeType *p)
 }
 void yyerror(char *s)
 {
-   fprintf(stdout,"%s\n",s);
+   printf("parse error");
 }
 #include "lex.yy.c"
 int main(void)
 {
+    command = fopen("command.txt","w");//打开文档，写入 
     yyparse();
     return 0;
 }
