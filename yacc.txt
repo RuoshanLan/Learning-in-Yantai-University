@@ -26,6 +26,7 @@
    Map sym[100];
    FILE *yyin;
    FILE *command;
+   FILE *Tree;
 %}
 %union
 {
@@ -265,10 +266,10 @@ int exTree(nodeType *p)
 	   else tree[i][cmax-1]='\0';
 	}
 	for(i=lmax-1;i>0&&tree[i][0]=='\0';i--);
-	printf("\n\nSyntaxTree %d:\n",treeNumber++);
+	fprintf(Tree,"\n\nSyntaxTree %d:\n",treeNumber++);
 	for(j=0;j<=i;j++)
 	{
-	  printf("\n%s",tree[j]);
+	  fprintf(Tree,"\n%s",tree[j]);
 	}
    printf("\n");
    return 0; 
@@ -277,17 +278,15 @@ void exNode(nodeType *p,int c,int l,int *childend,int *childmid)
 {
    int w,h;
    char *s;
-   int cbar;
+   int ctemp;
    int k;
    int childrenend,childrenmid;
    int childstart;
-   char word[20];
-   if(!p) return;
-   strcpy(word,"???");
-   s=word;
+   char treestr[20];
+   s=treestr;
    switch(p->type)
    {
-      case typeCon:sprintf(s,"con(%d)",p->con.value);break;
+      case typeCon:sprintf(s,"con(%g)",p->con.value);break;
 	  case typeId:sprintf(s,"id(%s)",sym[p->id.i].s);break;
 	  case typeChar:sprintf(s,"str(%s)",p->s.str);break;
 	  case typeOpr:
@@ -298,6 +297,11 @@ void exNode(nodeType *p,int c,int l,int *childend,int *childmid)
 		 case WHILE:s="while";break;
 		 case IF:s="if";break;
 		 case PRINT:s="print";break;
+		 case RESETFUNCTION:s="resetfunction";break;
+		 case DELAY:s="delay";break;
+		 case ROBOT:s="robot";break;
+		 case COMMAND:s="command";break;
+		 case COMMANDFUNCTION:s="commandfunction";break;
 		 case ';':s="[;]";break;
 		 case '=':s="[=]";break;
 		 case UMINUS:s="[_]";break;
@@ -322,12 +326,12 @@ void exNode(nodeType *p,int c,int l,int *childend,int *childmid)
     }
 	w=strlen(s)+columndis;
 	h=1;
-	cbar=c;
+	ctemp=c;
 	*childend=c+w;
 	*childmid=c+w/2;
 	if(p->type==typeCon||p->type==typeId||p->type==typeChar||p->opr.nops==0)
 	{
-	   treeDrawBox(s,cbar,l);
+	   treeDrawBox(s,ctemp,l);
 	   return;
 	}
 	childstart=c;
@@ -338,11 +342,11 @@ void exNode(nodeType *p,int c,int l,int *childend,int *childmid)
 	}
 	if(w<childrenend-c)
 	{
-	  cbar+=(childrenend-c-w)/2;
+	  ctemp+=(childrenend-c-w)/2;
 	  *childend=childrenend;
 	  *childmid=(c+childrenend)/2;
 	}
-	treeDrawBox(s,cbar,l);
+	treeDrawBox(s,ctemp,l);
 	childstart=c;
 	for(k=0;k<p->opr.nops;k++)
 	{
@@ -418,6 +422,7 @@ int main(void)
 {
     yyin=fopen("in.txt","r");
     command = fopen("commands.txt","w");//打开文档，写入
+	Tree=fopen("Tree.txt","w");
     yyparse();
     return 0;
 }
