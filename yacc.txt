@@ -27,6 +27,7 @@
    FILE *yyin;
    FILE *command;
    FILE *Tree;
+   FILE *interpreter;
 %}
 %union
 {
@@ -218,7 +219,7 @@ float ex(nodeType*p)
 						   {
 						   ex(p->opr.op[0]);
 						   }while(ex(p->opr.op[1])); return 0;
-				case PRINT:printf("%g\n",ex(p->opr.op[0]));return 0;
+				case PRINT:fprintf(interpreter,"%g\n",ex(p->opr.op[0]));return 0;
 				case RESETFUNCTION:{float temp;temp=ex(p->opr.op[0]);fprintf(command,",%c",'\n');return 0;}
 				case DELAY:fprintf(command,"delay%g,\n",ex(p->opr.op[0]));return 0;
 				case ROBOT:fprintf(command,"robot%g,\n",ex(p->opr.op[0]));return 0;
@@ -271,7 +272,6 @@ int exTree(nodeType *p)
 	{
 	  fprintf(Tree,"\n%s",tree[j]);
 	}
-   printf("\n");
    return 0; 
 }
 void exNode(nodeType *p,int c,int l,int *childend,int *childmid)
@@ -421,8 +421,9 @@ void yyerror(char *s)
 int main(void)
 {
     yyin=fopen("in.txt","r");
-    command = fopen("commands.txt","w");//打开文档，写入
+    command=fopen("commands.txt","w");//打开文档，写入
 	Tree=fopen("Tree.txt","w");
+	interpreter=fopen("number.txt","w");
     yyparse();
     return 0;
 }
