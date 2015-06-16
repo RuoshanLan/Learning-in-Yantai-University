@@ -8,11 +8,21 @@
    nodeType *str(char str[]);
    void freeNode(nodeType *p);
    float ex(nodeType *p);
+   int exTree(nodeType *p);
+   void treeDrawBox(char* s,int c,int l);
+   void treeDrawLine(int c1,int l1,int c2,int l2);
+   void exNode(nodeType* p,int c,int l,int *childend,int *childmid);
    int yylex(void);
-   void yyerror(char*s);
-   void addVar(char *);
+   void yyerror(char* s);
+   void addVar(char *s);
    int totalVar=0;
    int currentVar;
+   int columndis=2;
+   int linedis=4;
+   #define lmax 5000
+   #define cmax 5000
+   char tree[lmax][cmax];
+   int treeNumber=1;
    Map sym[100];
    FILE *yyin;
    FILE *command;
@@ -21,7 +31,7 @@
 {
    float iValue;
    int sIndex;
-   char com[11];
+   char com[25];
    nodeType *nPtr;
  };
 %token<iValue>NUMBER
@@ -42,7 +52,7 @@ program:
      _BEGIN function END  {exit(0);}
      ;
 function:
-     function stmt  {ex($2);freeNode($2);}
+     function stmt  {ex($2);exTree($2);freeNode($2);}
      |
       ;
 stmt:
@@ -126,7 +136,7 @@ nodeType *id(int i)
 }
 nodeType*str(char str[])
 {
-   
+
    nodeType*p;
    p=malloc(sizeof(nodeType));
    p->type=typeChar;
@@ -236,6 +246,158 @@ float ex(nodeType*p)
     }
     return 0;
 }
+int exTree(nodeType *p)
+{
+   int rootend,rootmid;
+    int i,j;
+    for(i=0;i<lmax;i++)
+    {
+      for(j=0;j<cmax;j++)
+	  {
+	    tree[i][j]=' ';
+	  }
+    }
+    exNode(p,0,0,&rootend,&rootmid);
+    for(i=0;i<lmax;i++)
+	{
+	   for(j=cmax-1;j>=0&&tree[i][j]==' ';j--);
+	   if(j<cmax-1) tree[i][j+1]='\0';
+	   else tree[i][cmax-1]='\0';
+	}
+	for(i=lmax-1;i>0&&tree[i][0]=='\0';i--);
+	printf("\n\nSyntaxTree %d:\n",treeNumber++);
+	for(j=0;j<=i;j++)
+	{
+	  printf("\n%s",tree[j]);
+	}
+   printf("\n");
+   return 0; 
+}
+void exNode(nodeType *p,int c,int l,int *childend,int *childmid)
+{
+   int w,h;
+   char *s;
+   int cbar;
+   int k;
+   int childrenend,childrenmid;
+   int childstart;
+   char word[20];
+   if(!p) return;
+   strcpy(word,"???");
+   s=word;
+   switch(p->type)
+   {
+      case typeCon:sprintf(s,"con(%d)",p->con.value);break;
+	  case typeId:sprintf(s,"id(%s)",sym[p->id.i].s);break;
+	  case typeChar:sprintf(s,"str(%s)",p->s.str);break;
+	  case typeOpr:
+	  switch(p->opr.oper)
+	  {
+	     case FOR:s="for";break;
+		 case REPEAT:s="repeat";break;
+		 case WHILE:s="while";break;
+		 case IF:s="if";break;
+		 case PRINT:s="print";break;
+		 case ';':s="[;]";break;
+		 case '=':s="[=]";break;
+		 case UMINUS:s="[_]";break;
+		 case '+':s="[+]";break;
+		 case '-':s="[-]";break;
+		 case '*':s="[*]";break;
+		 case '/':s="[/]";break;
+		 case '<':s="[<]";break;
+		 case '>':s="[>]";break;
+		 case GE:s="[>=]";break;
+		 case LE:s="[<=]";break;
+		 case NE:s="[!=]";break;
+		 case EQ:s="[==]";break;
+		 case PRESELFADD:s="[++]";break;
+	     case PRESELFMINUS:s="[--]";break;
+		 case SELFADD:s="[++]";break;
+		 case SELFMINUS:s="[--]";break;
+		 case AND:s="[&&]";break;
+		 case OR:s="[||]";break;
+	    }
+	  break;
+    }
+	w=strlen(s)+columndis;
+	h=1;
+	cbar=c;
+	*childend=c+w;
+	*childmid=c+w/2;
+	if(p->type==typeCon||p->type==typeId||p->type==typeChar||p->opr.nops==0)
+	{
+	   treeDrawBox(s,cbar,l);
+	   return;
+	}
+	childstart=c;
+	for(k=0;k<p->opr.nops;k++)
+	{
+	   exNode(p->opr.op[k],childstart,l+h+linedis,&childrenend,&childrenmid);
+	   childstart=childrenend;
+	}
+	if(w<childrenend-c)
+	{
+	  cbar+=(childrenend-c-w)/2;
+	  *childend=childrenend;
+	  *childmid=(c+childrenend)/2;
+	}
+	treeDrawBox(s,cbar,l);
+	childstart=c;
+	for(k=0;k<p->opr.nops;k++)
+	{
+	   exNode(p->opr.op[k],childstart,l+h+linedis,&childrenend,&childrenmid);
+	   treeDrawLine(*childmid,l+h,childrenmid,l+h+linedis-1);
+	   childstart=childrenend;
+	}
+}
+void treeTest(int l,int c)
+{
+   int flag;
+   flag=1;
+   if(l<0) flag=0;
+   if(l>=lmax) flag=0;
+   if(c<0) flag=0;
+   if(c>=cmax) flag=0;
+   if(flag) return;
+   printf("%s\n","rage error");
+   printf("%d %d\n",l,c);
+}
+void treeDrawBox(char *s,int c,int l)
+{
+   int i;
+   treeTest(l,c+strlen(s)-1+columndis);
+   for(i=0;i<strlen(s);i++)
+   {
+      tree[l][c+i+columndis]=s[i];
+   }
+}
+void treeDrawLine(int c1,int l1,int c2,int l2)
+{
+    int m;
+	treeTest(l1,c1);
+	treeTest(l2,c2);
+	m=(l1+l2)/2;
+	while(l1!=m)
+	{
+	  tree[l1][c1]='|';
+	  if(l1<l2) l1++;
+	  else l1--;
+	}
+	while(c1!=c2)
+	{
+	   tree[l1][c1]='-';
+	   if(c1<c2) c1++;
+	   else c1--;
+	}
+	while(l1!=l2)
+	{
+	  tree[l1][c1]='|';
+	  if(l1<l2) l1++;
+	  else l1--;
+	}
+	tree[l1][c1]='|';	
+}
 void freeNode(nodeType *p)
 {
     int i;
@@ -255,7 +417,7 @@ void yyerror(char *s)
 int main(void)
 {
     yyin=fopen("in.txt","r");
-    command = fopen("commands.txt","w");//打开文档，写入 
+    command = fopen("commands.txt","w");//打开文档，写入
     yyparse();
     return 0;
 }

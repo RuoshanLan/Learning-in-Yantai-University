@@ -25,7 +25,7 @@ typedef struct
 }idNodeType;
 typedef struct
 {
-	char str[11];
+	char str[25];
 }charNodeType;
 typedef struct
 {
